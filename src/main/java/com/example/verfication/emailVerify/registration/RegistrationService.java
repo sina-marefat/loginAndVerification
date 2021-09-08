@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.cert.CertificateExpiredException;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -42,25 +43,20 @@ public class RegistrationService {
     @Transactional
     public String confirmationToken(String token) throws CertificateExpiredException {
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token);
-        if(confirmationToken.getConfirmedAt()!=null){
-            throw new IllegalStateException("email Already Confirmed");
+        if(confirmationToken==null){
+            throw new NoSuchElementException("this token is used or not found");
         }
-
+        AppUser appUser = confirmationToken.getAppUser();
         LocalDateTime expiresAt = confirmationToken.getExpiredAt();
         if(expiresAt.isBefore(LocalDateTime.now())){
-            confirmationToken.setIs_used(true);
+            confirmationTokenService.deleteToken(appUser);
+            ConfirmationToken newToken = appUserService.makeToken(confirmationToken.getAppUser());
+            sendEmail(confirmationToken.getAppUser().getEmail(),confirmationToken.getAppUser().getFirstName(), newToken.getToken());
+            return "YOUR TOKEN HAS BEEN EXPIRED WE HAVE SEND NEW ONE";
         }
-        if(confirmationToken.getIs_used()&&confirmationTokenService.hasActiveToken(confirmationToken.getAppUser())){
-            String newToken = appUserService.renewalToken(confirmationToken.getAppUser());
-            sendEmail(confirmationToken.getAppUser().getEmail(),confirmationToken.getAppUser().getFirstName(),newToken);
-            return "Your Token has been Expired your new token has been sent" ;
-
-        } else if (confirmationToken.getIs_used()&&!confirmationTokenService.hasActiveToken(confirmationToken.getAppUser())){
-            throw new IllegalStateException("this token is expired and You already have an alive token");
-        }
-        confirmationTokenService.setConfirmedAt(token);
         appUserService.enableAppUser(confirmationToken.getAppUser().getEmail());
-        confirmationToken.setIs_used(true);
+        appUserService.setActivationTime(confirmationToken.getAppUser().getEmail());
+        confirmationTokenService.deleteToken(confirmationToken.getAppUser());
         return "CONFIRMED";
     }
 

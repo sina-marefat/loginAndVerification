@@ -37,11 +37,15 @@ public class AppUserService implements UserDetailsService {
         String encodedPassword  = bCryptPasswordEncoder.encode(appUser.getPassword());
         appUser.setPassword(encodedPassword);
         appUserRepository.save(appUser);
+        return makeToken(appUser).getToken();
+    }
+
+    public ConfirmationToken makeToken(AppUser appUser){
         String token_id = UUID.randomUUID().toString();
         ConfirmationToken token = new ConfirmationToken(token_id, LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(5),appUser);
-        confirmationTokenService.saveConfirmationToken(token);
-        return token_id;
+                LocalDateTime.now().plusMinutes(1),appUser);
+        confirmationTokenService.saveToken(token);
+        return token;
     }
 
     public void enableAppUser(String email) {
@@ -52,11 +56,12 @@ public class AppUserService implements UserDetailsService {
         appUser.setEnabled(true);
     }
 
-    public String renewalToken(AppUser appUser){
-        String token_id = UUID.randomUUID().toString();
-        ConfirmationToken token = new ConfirmationToken(token_id, LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(5),appUser);
-        confirmationTokenService.saveConfirmationToken(token);
-        return token_id;
+    public void setActivationTime(String email){
+        if(!appUserRepository.findByEmail(email).isPresent()){
+            throw new IllegalStateException("this user is not defined");
+        }
+        AppUser appUser = appUserRepository.findByEmail(email).get();
+        appUser.setActivationTime(LocalDateTime.now());
     }
+
 }

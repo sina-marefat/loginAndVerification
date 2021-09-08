@@ -17,7 +17,7 @@ public class RegistrationController {
         return registrationService.register(request);
     }
 
-    @GetMapping(path = "confirm")
+    @GetMapping(path = "/confirm")
     public String confirm(@RequestParam("token") String token) throws CertificateExpiredException {
         return registrationService.confirmationToken(token);
     }
