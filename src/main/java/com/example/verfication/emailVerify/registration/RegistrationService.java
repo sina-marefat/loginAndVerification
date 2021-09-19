@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.cert.CertificateExpiredException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -23,11 +24,10 @@ public class RegistrationService {
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
 
-
-    public String register(RegistrationRequest request) {
-        Boolean isValid = emailValidator.test(request.getEmail());
+    public String register(RegistrationRequest request) throws IllegalAccessException {
+        boolean isValid = emailValidator.test(request.getEmail());
         if (!isValid){
-            throw new IllegalStateException("Email "+request.getEmail() +"is not valid");
+            throw new IllegalStateException("Email "+request.getEmail() +" is not valid");
         }
         String s = appUserService.signUpUser(new AppUser(request.getFirstName(),request.getLastName(),
                 request.getEmail(),request.getPassword(), AppUserRole.USER));
@@ -128,4 +128,5 @@ public class RegistrationService {
                 "\n" +
                 "</div></div>";
     }
+
 }

@@ -13,12 +13,24 @@ import java.time.LocalDateTime;
 @Data
 @Getter
 @Setter
-public class ConfirmationToken implements Serializable {
-
+@Entity
+@NoArgsConstructor
+public class ConfirmationToken  {
+    @Id
+    @SequenceGenerator(name = "confirmation_token_sequence",
+            sequenceName = "confirmation_token_sequence",
+            allocationSize = 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "confirmation_token_sequence"
+    )
+    private Long id;
     private String token;
     private LocalDateTime createdAt;
     private LocalDateTime expiredAt;
     private LocalDateTime confirmedAt;
+    @OneToOne
     private AppUser appUser;
 
     public ConfirmationToken(String token,
@@ -31,4 +43,5 @@ public class ConfirmationToken implements Serializable {
         this.appUser = appUser;
         confirmedAt = null;
     }
+
 }

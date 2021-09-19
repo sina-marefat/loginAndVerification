@@ -6,7 +6,7 @@ import com.example.verfication.emailVerify.appuser.AppUser;
 import java.util.List;
 
 public interface ConfirmationTokenService {
-    Boolean saveToken(ConfirmationToken confirmationToken);
+    void saveToken(ConfirmationToken confirmationToken);
 
     List<ConfirmationToken> fetchAll();
 

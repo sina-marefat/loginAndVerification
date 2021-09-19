@@ -1,6 +1,7 @@
 package com.example.verfication.emailVerify.registration.token;
 
 import com.example.verfication.emailVerify.appuser.AppUser;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,31 +9,30 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class ConfirmationTokenServiceImpl implements ConfirmationTokenService{
     @Autowired
-    private  ConfirmationTokenRepository confirmationTokenRepository;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
 
     @Override
-    public Boolean saveToken(ConfirmationToken confirmationToken) {
-        return confirmationTokenRepository.saveToken(confirmationToken);
+    public void saveToken(ConfirmationToken confirmationToken) {
+        confirmationTokenRepository.save(confirmationToken);
     }
 
     @Override
     public List<ConfirmationToken> fetchAll() {
-        return confirmationTokenRepository.fetchAll();
+        return confirmationTokenRepository.findAll();
     }
 
     @Override
     public ConfirmationToken getToken(String token) {
-        List<ConfirmationToken> tokens = fetchAll();
-        ConfirmationToken found =tokens.stream().filter(s -> s.getToken().equals(token)).findFirst().orElse(null);
-        return found;
+        return confirmationTokenRepository.findByToken(token);
     }
 
 
     @Override
     public void deleteToken(AppUser appUser) {
-        confirmationTokenRepository.deleteToken(appUser);
+        confirmationTokenRepository.deleteByAppUser(appUser);
     }
 
 }
